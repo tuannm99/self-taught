@@ -1,8 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 import httpStatus from 'http-status';
 import mongoose from 'mongoose';
-
-// import logger from './logger';
+import logger from './logger';
 
 export class ApiError extends Error {
   msg: string;
@@ -42,11 +41,11 @@ export const errorConverter = (
     const msg = err.msg || httpStatus[statusCode];
     error = new ApiError(statusCode, msg, err.stack);
   }
-  // logger.error(error);
 
   const { statusCode, msg } = error;
   res.locals.errorMessage = err.msg;
 
+  logger.error(msg);
   const response = {
     code: statusCode,
     message: msg,

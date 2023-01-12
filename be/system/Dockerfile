@@ -1,4 +1,4 @@
-FROM node:12-alpine
+FROM node:14-alpine
 
 WORKDIR /app
 
@@ -8,3 +8,5 @@ RUN npm install
 EXPOSE 3000
 
 CMD ["npm", "run", "watch"]
+
+HEALTHCHECK --interval=30s CMD wget -qO- localhost:5000/healthcheck

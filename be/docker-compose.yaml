@@ -53,16 +53,22 @@ services:
       - ./volumes/kafka-broker/data:/var/lib/kafka/data
     networks:
       - ecm
+    healthcheck:
+      test: nc -z localhost 9092 || exit -1
+      start_period: 15s
+      interval: 5s
+      timeout: 10s
+      retries: 10
 
-  system:
-    container_name: system
-    hostname: system
+  ecm-system:
+    container_name: ecm-system
+    hostname: ecm-system
     restart: always
     build:
       context: ./system
       dockerfile: Dockerfile.dev
     ports:
-      - '3000:3000'
+      - '5000:5000'
     environment:
       - NODE_ENV=${NODE_ENV}
       - PORT=${PORT}

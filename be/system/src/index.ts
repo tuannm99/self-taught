@@ -64,8 +64,9 @@ const bootstrap = async () => {
   app.use(errorConverter);
   // app.use(errorHandler);
 
-  app.listen(3000, async () => {
-    logger.info('app running on port 3000');
+  const port = process.env.PORT;
+  app.listen(port, async () => {
+    logger.info(`app running on port ${port}`);
   });
 };
 
