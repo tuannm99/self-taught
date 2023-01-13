@@ -25,6 +25,22 @@ const bootstrap = async () => {
   app.use(successHandler);
   app.use(errorHandler);
 
+  await initialConsumers();
+
+  const producer = ProducerSingleton.getInstance().producer;
+
+  producer.on('producer.connect', () => {
+    console.log(`KafkaProvider: connected`);
+  });
+
+  producer.on('producer.disconnect', () => {
+    console.log(`KafkaProvider: could not connect`);
+  });
+
+  producer.on('producer.network.request_timeout', (payload: any) => {
+    console.log(`KafkaProvider: request timeout ${payload.clientId}`);
+  });
+
   app.get(
     '/healthcheck',
     globalExceptionHandler(
@@ -50,21 +66,6 @@ const bootstrap = async () => {
 
   app.listen(3000, async () => {
     logger.info('app running on port 3000');
-    await initialConsumers();
-
-    const producer = ProducerSingleton.getInstance().producer;
-
-    producer.on('producer.connect', () => {
-      console.log(`KafkaProvider: connected`);
-    });
-
-    producer.on('producer.disconnect', () => {
-      console.log(`KafkaProvider: could not connect`);
-    });
-
-    producer.on('producer.network.request_timeout', (payload: any) => {
-      console.log(`KafkaProvider: request timeout ${payload.clientId}`);
-    });
   });
 };
 
