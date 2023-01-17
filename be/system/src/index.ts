@@ -2,11 +2,11 @@ import express, { Express, NextFunction, Request, Response } from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 
-import { errorConverter, globalExceptionHandler } from './libs/core/exception';
-import logger from './libs/core/logger';
-import { successHandler, errorHandler } from './libs/core/middleware';
+import { errorConverter, globalExceptionHandler } from './infras/core/exception';
+import logger from './infras/core/logger';
+import { successHandler, errorHandler } from './infras/core/middleware';
 
-import { ProducerSingleton, produce } from './libs/kafka/producer';
+import { ProducerSingleton, produce } from './infras/kafka/producer';
 import { initialConsumers } from './initConsumer';
 
 const bootstrap = async () => {
@@ -42,7 +42,7 @@ const bootstrap = async () => {
   });
 
   app.get(
-    '/healthcheck',
+    '/api/healthcheck',
     globalExceptionHandler(
       async (_req: Request, res: Response, _next: NextFunction) => {
         res.status(200).json({ msg: 'Hello World' });
@@ -51,7 +51,7 @@ const bootstrap = async () => {
   );
 
   app.post(
-    '/produce',
+    '/api/v1/produce',
     globalExceptionHandler(
       async (req: Request, res: Response, _next: NextFunction) => {
         const { msg }: { msg: string } = req.body;

@@ -9,4 +9,4 @@ EXPOSE 3000
 
 CMD ["npm", "run", "watch"]
 
-HEALTHCHECK --interval=30s CMD wget -qO- localhost:5000/healthcheck
+HEALTHCHECK --interval=30s CMD wget -qO- localhost:5000/api/healthcheck
