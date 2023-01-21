@@ -1,0 +1,54 @@
+import express, { Express, NextFunction, Request, Response } from 'express';
+import helmet from 'helmet';
+import cors from 'cors';
+
+import {
+  exceptionConverter,
+  errorHandler as exceptionHandler,
+  globalExceptionHandler,
+} from './libs/exception';
+import { successHandler, errorHandler } from './libs/middleware';
+import router from './controllers';
+
+export default async () => {
+  const app: Express = express();
+  // midleware
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(helmet());
+  app.use(cors({ origin: '*' }));
+  app.use((_req: Request, res: Response, next: NextFunction) => {
+    res.header('Access-Control-Allow-Origin', '*');
+    res.header('Access-Control-Allow-Headers', 'X-Requested-With');
+    res.header('Cross-Origin-Resource-Policy', 'cross-origin');
+    next();
+  });
+  app.use(successHandler);
+  app.use(errorHandler);
+
+  app.get(
+    '/api/healthcheck',
+    globalExceptionHandler(async (_req: Request, res: Response) => {
+      res.status(200).json({ msg: 'Hello World' });
+    })
+  );
+
+  // app.post(
+  //   '/api/v1/produce',
+  //   globalExceptionHandler(async (req: Request, res: Response) => {
+  //     const { msg }: { msg: string } = req.body;
+  //     await produce({ topic: 'test-topic', messages: [{ value: msg }] });
+  //     res.status(200).json({ msg: 'send msg to test-topic success' });
+  //   })
+  // );
+
+  app.use('/api/v1', router);
+
+  app.use(exceptionConverter);
+  app.use(exceptionHandler);
+
+  const port = process.env.PORT;
+  app.listen(port, async () => {
+    console.log(`app running on port ${port}`);
+  });
+};

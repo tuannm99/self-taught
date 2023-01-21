@@ -1,7 +1,6 @@
 import { Producer, Partitioners, ProducerRecord } from 'kafkajs';
 
-import { ApiError } from '../core/exception';
-import logger from '../core/logger';
+import { ApiError } from '../exception';
 import { kafka } from '.';
 
 /**
@@ -35,7 +34,7 @@ export class ProducerSingleton {
       await this._producer.connect();
       this._isConnected = true;
     } catch (err) {
-      logger.error(err);
+      console.error(err);
     }
   }
 
@@ -51,7 +50,7 @@ export const produce = async (producerRecord: ProducerRecord) => {
       await producerInstance.connect();
     }
 
-    logger.info(`Publish: ${JSON.stringify({ ...producerRecord })}`);
+    console.log(`Publish: ${JSON.stringify({ ...producerRecord })}`);
     await producerInstance.producer.send({
       ...producerRecord,
     });

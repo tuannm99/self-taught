@@ -1,7 +1,6 @@
 import morgan from 'morgan';
 import { format } from 'date-and-time';
 import { Request, Response } from 'express';
-import logger from './logger';
 
 morgan.token(
   'message',
@@ -17,11 +16,11 @@ const errorResponseFormat = `${getIpFormat()}:remote-user [:mydate] :method :url
 export const successHandler = morgan(successResponseFormat, {
   skip: (_req: Request, res: Response) =>
     res.statusCode >= 400 || process.env.NODE_ENV === 'test',
-  stream: { write: (message) => logger.info(message.trim()) },
+  stream: { write: (message) => console.log(message.trim()) },
 });
 
 export const errorHandler = morgan(errorResponseFormat, {
   skip: (_req: Request, res: Response) =>
     res.statusCode < 400 || process.env.NODE_ENV === 'test',
-  stream: { write: (message) => logger.error(message.trim()) },
+  stream: { write: (message) => console.error(message.trim()) },
 });

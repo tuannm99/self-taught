@@ -2,7 +2,6 @@ import { v4 as uuidv4 } from 'uuid';
 
 import { ConsumerRunConfig, EachMessagePayload } from 'kafkajs';
 import { kafka } from '.';
-import logger from '../core/logger';
 
 export interface IConsumerFactory {
   topic: string;
@@ -29,7 +28,7 @@ export const registerConsumer = async (
               maxRetryTime: 5,
               retries: 3,
               restartOnFailure: async (e) => {
-                logger.info('Restart Onfailure');
+                console.log('Restart Onfailure');
                 throw e;
               },
             },

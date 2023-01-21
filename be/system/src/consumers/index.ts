@@ -1,5 +1,5 @@
-import {  EachMessagePayload } from 'kafkajs';
-import { IConsumerFactory } from '../infras/kafka/consumer';
+import { EachMessagePayload } from 'kafkajs';
+import { IConsumerFactory } from '../libs/kafka/consumer';
 
 const consumerCallback1 = async (payload: EachMessagePayload) => {
   const { message, topic, partition } = payload;

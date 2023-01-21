@@ -1,75 +1,30 @@
-import express, { Express, NextFunction, Request, Response } from 'express';
-import helmet from 'helmet';
-import cors from 'cors';
+import { PostgresDataSource } from './libs/db';
+import bootstrap from './app.init';
+import { initialConsumers } from './consumer.init';
+import { ProducerSingleton } from './libs/kafka/producer';
 
-import { errorConverter, globalExceptionHandler } from './infras/core/exception';
-import logger from './infras/core/logger';
-import { successHandler, errorHandler } from './infras/core/middleware';
+const { producer } = ProducerSingleton.getInstance();
 
-import { ProducerSingleton, produce } from './infras/kafka/producer';
-import { initialConsumers } from './initConsumer';
+producer.on('producer.connect', () => {
+  console.log(`KafkaProvider: connected`);
+});
 
-const bootstrap = async () => {
-  const app: Express = express();
-  // midleware
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
-  app.use(helmet());
-  app.use(cors({ origin: '*' }));
-  app.use(function (_req: Request, res: Response, next: NextFunction) {
-    res.header('Access-Control-Allow-Origin', '*');
-    res.header('Access-Control-Allow-Headers', 'X-Requested-With');
-    res.header('Cross-Origin-Resource-Policy', 'cross-origin');
-    next();
-  });
-  app.use(successHandler);
-  app.use(errorHandler);
+producer.on('producer.disconnect', () => {
+  console.log(`KafkaProvider: could not connect`);
+});
 
-  await initialConsumers();
-
-  const producer = ProducerSingleton.getInstance().producer;
-
-  producer.on('producer.connect', () => {
-    console.log(`KafkaProvider: connected`);
-  });
-
-  producer.on('producer.disconnect', () => {
-    console.log(`KafkaProvider: could not connect`);
-  });
-
-  producer.on('producer.network.request_timeout', (payload: any) => {
-    console.log(`KafkaProvider: request timeout ${payload.clientId}`);
-  });
-
-  app.get(
-    '/api/healthcheck',
-    globalExceptionHandler(
-      async (_req: Request, res: Response, _next: NextFunction) => {
-        res.status(200).json({ msg: 'Hello World' });
-      }
-    )
-  );
-
-  app.post(
-    '/api/v1/produce',
-    globalExceptionHandler(
-      async (req: Request, res: Response, _next: NextFunction) => {
-        const { msg }: { msg: string } = req.body;
-        await produce({ topic: 'test-topic', messages: [{ value: msg }] });
-        res.status(200).json({ msg: 'send msg to test-topic success' });
-      }
-    )
-  );
-
-  app.use(errorConverter);
-  // app.use(errorHandler);
-
-  const port = process.env.PORT;
-  app.listen(port, async () => {
-    logger.info(`app running on port ${port}`);
-  });
-};
+producer.on('producer.network.request_timeout', (payload: any) => {
+  console.log(`KafkaProvider: request timeout ${payload.clientId}`);
+});
 
 (async () => {
-  await bootstrap();
+  try {
+    await PostgresDataSource.initialize();
+    console.log('db connected');
+    await initialConsumers();
+
+    await bootstrap();
+  } catch (error) {
+    console.error(error);
+  }
 })();
