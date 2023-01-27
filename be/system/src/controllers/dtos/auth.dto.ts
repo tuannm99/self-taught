@@ -3,7 +3,7 @@ import { IsEmail, IsString, Length, MinLength } from 'class-validator';
 
 export class LoginDto {
   @IsString()
-  @MinLength(8, { message: 'Username should be minimum of 8 characters' })
+  @MinLength(4, { message: 'Username should be minimum of 4 characters' })
   @Trim()
   public username: string;
 
@@ -13,10 +13,9 @@ export class LoginDto {
   public password?: string;
 }
 
-
 export class RegisterDto {
 
-  @Length(8, 20)
+  @Length(4, 20)
   username: string;
 
   @Length(8, 20)
@@ -25,10 +24,8 @@ export class RegisterDto {
   @Length(3, 20)
   firstName: string;
 
-  @Length(3, 20)
   middleName: string;
 
-  @Length(3, 20)
   lastName: string;
 
   @Length(8, 11)

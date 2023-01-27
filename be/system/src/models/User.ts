@@ -8,7 +8,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { PostgresDataSource } from '.';
-import { ApiError, validateEntity } from '../exception';
+import { ApiError, validateEntity } from '../libs/exception';
 
 export enum LOGIN_METHOD {
   GOOGLE = 'google',
@@ -29,11 +29,11 @@ export class User {
   id: number;
 
   @Column({})
-  @Length(8, 20)
+  @Length(4, 20)
   username: string;
 
   @Column({})
-  @Length(5, 20)
+  @Length(5, 100)
   password: string;
 
   @Column({ nullable: true })

@@ -13,13 +13,13 @@ const getIpFormat = () =>
 const successResponseFormat = ` ${getIpFormat()}:remote-user [:mydate] :method :url :status - :response-time ms`;
 const errorResponseFormat = `${getIpFormat()}:remote-user [:mydate] :method :url :status - :response-time ms - message: :message`;
 
-export const successHandler = morgan(successResponseFormat, {
+export const successLogger = morgan(successResponseFormat, {
   skip: (_req: Request, res: Response) =>
     res.statusCode >= 400 || process.env.NODE_ENV === 'test',
   stream: { write: (message) => console.log(message.trim()) },
 });
 
-export const errorHandler = morgan(errorResponseFormat, {
+export const errorLogger = morgan(errorResponseFormat, {
   skip: (_req: Request, res: Response) =>
     res.statusCode < 400 || process.env.NODE_ENV === 'test',
   stream: { write: (message) => console.error(message.trim()) },

@@ -4,11 +4,12 @@ import cors from 'cors';
 
 import {
   exceptionConverter,
-  errorHandler as exceptionHandler,
-  globalExceptionHandler,
+  nextErr,
+  exceptionHandler,
 } from './libs/exception';
-import { successHandler, errorHandler } from './libs/middleware';
+import { successLogger, errorLogger } from './libs/middleware';
 import router from './controllers';
+import passport from './middlewares/passport';
 
 export default async () => {
   const app: Express = express();
@@ -23,15 +24,17 @@ export default async () => {
     res.header('Cross-Origin-Resource-Policy', 'cross-origin');
     next();
   });
-  app.use(successHandler);
-  app.use(errorHandler);
+  app.use(successLogger);
+  app.use(errorLogger);
 
   app.get(
     '/api/healthcheck',
-    globalExceptionHandler(async (_req: Request, res: Response) => {
+    nextErr(async (_req: Request, res: Response) => {
       res.status(200).json({ msg: 'Hello World' });
     })
   );
+
+  app.use(passport.initialize());
 
   // app.post(
   //   '/api/v1/produce',

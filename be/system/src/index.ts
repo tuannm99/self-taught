@@ -1,7 +1,7 @@
-import { PostgresDataSource } from './libs/db';
 import bootstrap from './app.init';
 import { initialConsumers } from './consumer.init';
 import { ProducerSingleton } from './libs/kafka/producer';
+import { PostgresDataSource } from './models';
 
 const { producer } = ProducerSingleton.getInstance();
 

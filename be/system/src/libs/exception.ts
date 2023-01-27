@@ -25,7 +25,7 @@ export class ApiError extends Error {
 }
 
 type ResolveErr = (req: Request, res: Response, next: NextFunction) => void;
-export const globalExceptionHandler =
+export const nextErr =
   (fn: ResolveErr) => (req: Request, res: Response, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch((err: ApiError) => next(err));
   };
@@ -50,7 +50,7 @@ export const exceptionConverter = (
   next(error);
 };
 
-export const errorHandler = (
+export const exceptionHandler = (
   err: ApiError,
   _req: Request,
   res: Response,
@@ -70,7 +70,7 @@ export const errorHandler = (
   next();
 };
 
-export function dtoValidationMiddleware(
+export function dtoValidation(
   type: any,
   skipMissingProperties = false
 ): RequestHandler {

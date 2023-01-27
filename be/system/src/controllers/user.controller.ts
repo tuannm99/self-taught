@@ -2,28 +2,28 @@ import { plainToInstance } from 'class-transformer';
 import { Request, Response, Router } from 'express';
 import httpStatus from 'http-status';
 import { buildResponseMessage } from '../libs/common';
-import { PostgresDataSource } from '../libs/db';
-import { User } from '../libs/db/User';
-import { ApiError, globalExceptionHandler } from '../libs/exception';
+import { PostgresDataSource } from '../models';
+import { User } from '../models/User';
+import { ApiError, nextErr } from '../libs/exception';
 
 const userRoutes = Router();
 
 userRoutes.get(
   '/',
   // dtoValidationMiddleware(RefreshTokenDto),
-  globalExceptionHandler(async (req: Request, res: Response) => {
+  nextErr(async (req: Request, res: Response) => {
     const users = await PostgresDataSource.createQueryBuilder()
       .select('user')
       .from(User, 'user')
       .getMany();
-    return buildResponseMessage(res, users, httpStatus.OK);
+    return buildResponseMessage(httpStatus.OK, res, users);
   })
 );
 
 userRoutes.get(
   '/:id',
   // dtoValidationMiddleware(RefreshTokenDto),
-  globalExceptionHandler(async (req: Request, res: Response) => {
+  nextErr(async (req: Request, res: Response) => {
     res.status(200).json({ msg: 'Login success' });
   })
 );
@@ -31,7 +31,7 @@ userRoutes.get(
 userRoutes.post(
   '/',
   // dtoValidationMiddleware(RefreshTokenDto),
-  globalExceptionHandler(async (req: Request, res: Response) => {
+  nextErr(async (req: Request, res: Response) => {
     res.status(200).json({ msg: 'Login success' });
   })
 );
@@ -39,7 +39,7 @@ userRoutes.post(
 userRoutes.put(
   '/:id',
   // dtoValidationMiddleware(RefreshTokenDto),
-  globalExceptionHandler(async (req: Request, res: Response) => {
+  nextErr(async (req: Request, res: Response) => {
     const { id } = req.params;
     const { email } = req.body;
 
@@ -68,16 +68,16 @@ userRoutes.put(
     user.updatedAt = new Date();
     user.updatedBy = id;
     await PostgresDataSource.manager.save(user);
-    return buildResponseMessage(res, user, httpStatus.OK);
+    return buildResponseMessage(httpStatus.OK, res, user);
   })
 );
 
 userRoutes.delete(
   '/:id',
   // dtoValidationMiddleware(RefreshTokenDto),
-  globalExceptionHandler(async (req: Request, res: Response) => {
+  nextErr(async (req: Request, res: Response) => {
     const { id } = req.params;
-    res.status(200).json({ msg: 'Login success' });
+    return buildResponseMessage(httpStatus.OK, res, { id });
   })
 );
 
