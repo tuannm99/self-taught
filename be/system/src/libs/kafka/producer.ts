@@ -2,6 +2,7 @@ import { Producer, Partitioners, ProducerRecord } from 'kafkajs';
 
 import { ApiError } from '../exception';
 import { kafka } from '.';
+import logger from '../winston';
 
 /**
  * Producer is Singleton
@@ -50,7 +51,7 @@ export const produce = async (producerRecord: ProducerRecord) => {
       await producerInstance.connect();
     }
 
-    console.log(`Publish: ${JSON.stringify({ ...producerRecord })}`);
+    logger.info(`Publish: ${JSON.stringify({ ...producerRecord })}`);
     await producerInstance.producer.send({
       ...producerRecord,
     });

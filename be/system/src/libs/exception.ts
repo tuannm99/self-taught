@@ -6,6 +6,7 @@ import { TypeORMError } from 'typeorm';
 import { sanitize } from 'class-sanitizer';
 import { plainToInstance } from 'class-transformer';
 import { validate, ValidationError } from 'class-validator';
+import logger from './winston';
 
 export class ApiError extends Error {
   msg: any;
@@ -64,7 +65,7 @@ export const exceptionHandler = (
     stack: err.stack,
   };
 
-  console.log(msg, err.stack);
+  logger.error(`${msg}${err.stack !== 'Error' ? ` ~ ${err.stack}` : ''}`);
 
   res.status(statusCode).send(response);
   next();

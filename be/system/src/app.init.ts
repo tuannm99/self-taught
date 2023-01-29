@@ -7,8 +7,9 @@ import {
   nextErr,
   exceptionHandler,
 } from './libs/exception';
-import { successLogger, errorLogger } from './libs/middleware';
+import { successLogger, errorLogger } from './libs/morgan';
 import router from './controllers';
+import logger from './libs/winston';
 
 export default async () => {
   const app: Express = express();
@@ -49,6 +50,6 @@ export default async () => {
 
   const port = process.env.PORT;
   app.listen(port, async () => {
-    console.log(`app running on port ${port}`);
+    logger.info(`app running on port ${port}`);
   });
 };

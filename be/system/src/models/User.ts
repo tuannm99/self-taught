@@ -11,11 +11,9 @@ import { PostgresDataSource } from '.';
 import { LOGIN_METHOD } from '../constants';
 import { ApiError, validateEntity } from '../libs/exception';
 import { Role } from './Role';
-import { Token } from './Token';
 
 @Entity()
 export class User {
-  @OneToMany(() => Token, (token) => token.userId)
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -78,16 +76,34 @@ export class User {
   @Column({ nullable: true })
   deletedBy: string;
 
+  @Column({ nullable: true })
+  isDeleted: boolean;
+
   @OneToMany(() => Role, (role) => role.userId)
   role: Role[];
 
   @BeforeInsert()
   async validate() {
-    const isUsernameExisted = await PostgresDataSource.createQueryBuilder()
+    await validateEntity(this);
+  }
+
+  async checkUnameMail(id?: number) {
+    let userQuery = PostgresDataSource.createQueryBuilder()
       .select('user')
       .from(User, 'user')
-      .where('user.username = :username', { username: this.username })
-      .getOne();
+      .where('user.username = :username', { username: this.username });
+
+    let mailQuery = PostgresDataSource.createQueryBuilder()
+      .select('user')
+      .from(User, 'user')
+      .where('user.email = :email', { email: this.email });
+
+    if (id) {
+      mailQuery.andWhere('user.id != :id', { id: id });
+      userQuery.andWhere('user.id != :id', { id: id });
+    }
+
+    const isUsernameExisted = await userQuery.getOne();
     if (isUsernameExisted) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
@@ -95,18 +111,12 @@ export class User {
       );
     }
 
-    const isEmailExisted = await PostgresDataSource.createQueryBuilder()
-      .select('user')
-      .from(User, 'user')
-      .where('user.email = :email', { email: this.email })
-      .getOne();
-
+    const isEmailExisted = await mailQuery.getOne();
     if (isEmailExisted) {
       throw new ApiError(
         httpStatus.BAD_REQUEST,
         `email ${this.email} existed!`
       );
     }
-    await validateEntity(this);
   }
 }

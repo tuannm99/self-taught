@@ -38,17 +38,10 @@ userRoutes.put(
   '/:id',
   nextErr(async (req: Request, res: Response) => {
     const { id } = req.params;
-    const { email } = req.body;
 
-    const userExisted = await userRepo.findBy({ id: Number(id) });
+    const userExisted = await userRepo.findOneBy({ id: Number(id) });
     if (!userExisted) {
       throw new ApiError(httpStatus.NOT_FOUND, 'User not found');
-    }
-
-    const isEmailExisted =
-      (await userRepo.countBy({ id: Number(id), email })) > 0;
-    if (isEmailExisted) {
-      throw new ApiError(httpStatus.BAD_REQUEST, 'Email is existed');
     }
 
     const user = plainToInstance(User, {
@@ -57,6 +50,7 @@ userRoutes.put(
       updatedAt: new Date(),
       updatedBy: id,
     });
+    await user.checkUnameMail(Number(id));
     const inserted = await PostgresDataSource.manager.save(user);
     return buildResponseMessage(httpStatus.OK, res, inserted);
   })

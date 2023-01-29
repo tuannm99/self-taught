@@ -48,6 +48,7 @@ authRoutes.post(
       password,
       isCustomer: true,
     });
+    await user.checkUnameMail();
     const inserted = await PostgresDataSource.manager.save(user);
     return buildResponseMessage(httpStatus.OK, res, inserted);
   })
@@ -69,6 +70,17 @@ authRoutes.get(
 
     const updated = await generateToken(userId, true);
     return buildResponseMessage(httpStatus.OK, res, updated);
+  })
+);
+
+/**
+ * check permission of user
+ * using redis with lru cached strategy
+ */
+authRoutes.post(
+  '/perm',
+  nextErr(async (req: Request, res: Response) => {
+    return buildResponseMessage(httpStatus.OK, res, { ok: 'ok' });
   })
 );
 

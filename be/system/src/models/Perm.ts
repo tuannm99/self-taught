@@ -1,9 +1,7 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from 'typeorm';
-import { RolePerm } from './RolePerm';
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity()
 export class Perm {
-  @OneToMany(() => RolePerm, (rolePerm) => rolePerm.permId)
   @PrimaryGeneratedColumn()
   id: number;
 
