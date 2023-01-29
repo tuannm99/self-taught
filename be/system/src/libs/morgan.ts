@@ -7,8 +7,8 @@ morgan.token(
   (_req: Request, res: Response) => res.locals.errorMessage || ''
 );
 
-const successResponseFormat = `:remote-addr :remote-user :method :url :status - :response-time ms`;
-const errorResponseFormat = `:remote-addr :remote-user :method :url :status - :response-time ms - message: :message`;
+const successResponseFormat = `:method :url :status - :response-time ms`;
+const errorResponseFormat = `:method :url :status - :response-time ms - message: :message`;
 
 export const successLogger = morgan(successResponseFormat, {
   skip: (_req: Request, res: Response) =>

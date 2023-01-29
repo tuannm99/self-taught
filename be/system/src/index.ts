@@ -1,6 +1,6 @@
 import bootstrap from './app.init';
 import { initialConsumers } from './consumer.init';
-import { ProducerSingleton } from './libs/kafka/producer';
+import { ProducerSingleton } from './libs/kafka';
 import logger from './libs/winston';
 import { PostgresDataSource } from './models';
 

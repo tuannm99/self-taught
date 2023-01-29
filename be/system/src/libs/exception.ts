@@ -65,7 +65,7 @@ export const exceptionHandler = (
     stack: err.stack,
   };
 
-  logger.error(`${msg}${err.stack !== 'Error' ? ` ~ ${err.stack}` : ''}`);
+  logger.error(`${msg}${err.stack !== 'Error' ? ` - ${err.stack}` : ''}`);
 
   res.status(statusCode).send(response);
   next();
@@ -83,7 +83,7 @@ export function dtoValidation(
           const dtoErrors = errors.map((error: ValidationError) =>
             (Object as any).values(error.constraints)
           );
-          next(new ApiError(400, dtoErrors));
+          next(new ApiError(httpStatus.BAD_REQUEST, dtoErrors));
         } else {
           //sanitize the object and call the next middleware
           sanitize(dtoObj);
@@ -101,6 +101,6 @@ export const validateEntity = async (entity: any) => {
     const dtoErrors = errors.map((error: ValidationError) =>
       (Object as any).values(error.constraints)
     );
-    throw new ApiError(400, dtoErrors);
+    throw new ApiError(httpStatus.BAD_REQUEST, dtoErrors);
   }
 };
