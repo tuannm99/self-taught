@@ -8,23 +8,14 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { PostgresDataSource } from '.';
+import { LOGIN_METHOD } from '../constants';
 import { ApiError, validateEntity } from '../libs/exception';
-
-export enum LOGIN_METHOD {
-  GOOGLE = 'google',
-  FACEBOOK = 'facebook',
-  ACC = 'acc',
-}
-
-export enum METHOD_ACTION {
-  READ = 'read',
-  CREATE = 'create',
-  UPDATE = 'update',
-  DELETE = 'delete',
-}
+import { Role } from './Role';
+import { Token } from './Token';
 
 @Entity()
 export class User {
+  @OneToMany(() => Token, (token) => token.userId)
   @PrimaryGeneratedColumn()
   id: number;
 
@@ -72,23 +63,23 @@ export class User {
   @Column({ nullable: false, default: new Date() })
   createdAt: Date;
 
-  // @OneToMany(() => User, (user) => user.id)
   @Column({ nullable: true })
   createdBy: string;
 
   @Column({ nullable: true })
   updatedAt: Date;
 
-  // @OneToMany(() => User, (user) => user.id)
   @Column({ nullable: true })
   updatedBy: string;
 
   @Column({ nullable: true })
   deletedAt: Date;
 
-  // @OneToMany(() => User, (user) => user.id)
   @Column({ nullable: true })
   deletedBy: string;
+
+  @OneToMany(() => Role, (role) => role.userId)
+  role: Role[];
 
   @BeforeInsert()
   async validate() {
@@ -118,35 +109,4 @@ export class User {
     }
     await validateEntity(this);
   }
-}
-
-@Entity()
-export class Role {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column({})
-  code: string;
-
-  @Column({})
-  name: string;
-
-  @OneToMany(() => AccesList, (accessList) => accessList.id)
-  @Column({})
-  accessList: AccesList[];
-}
-
-@Entity()
-export class AccesList {
-  @PrimaryGeneratedColumn()
-  id: number;
-
-  @Column()
-  functionCode: string;
-
-  @Column()
-  functionName: string;
-
-  @Column({ type: 'enum', enum: METHOD_ACTION, default: METHOD_ACTION.READ })
-  action: METHOD_ACTION;
 }

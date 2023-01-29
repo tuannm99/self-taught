@@ -9,7 +9,6 @@ import {
 } from './libs/exception';
 import { successLogger, errorLogger } from './libs/middleware';
 import router from './controllers';
-import passport from './middlewares/passport';
 
 export default async () => {
   const app: Express = express();
@@ -33,8 +32,6 @@ export default async () => {
       res.status(200).json({ msg: 'Hello World' });
     })
   );
-
-  app.use(passport.initialize());
 
   // app.post(
   //   '/api/v1/produce',

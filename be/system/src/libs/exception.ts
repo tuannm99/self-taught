@@ -64,7 +64,7 @@ export const exceptionHandler = (
     stack: err.stack,
   };
 
-  console.log(msg);
+  console.log(msg, err.stack);
 
   res.status(statusCode).send(response);
   next();

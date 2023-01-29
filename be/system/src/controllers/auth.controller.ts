@@ -1,11 +1,8 @@
-import { Router, Request, Response, NextFunction } from 'express';
+import { Router, Request, Response } from 'express';
 import httpStatus from 'http-status';
-import { plainToInstance } from 'class-transformer';
-import passport from 'passport';
 
 import { ApiError, dtoValidation, nextErr } from '../libs/exception';
-import { PostgresDataSource } from '../models';
-import { User } from '../models/User';
+import { PostgresDataSource, tokenRepo, userRepo } from '../models';
 import { LoginDto, RefreshTokenDto, RegisterDto } from './dtos/auth.dto';
 import {
   buildResponseMessage,
@@ -13,20 +10,18 @@ import {
   hashStr,
   isHashedMatch,
 } from '../libs/common';
+import { generateToken } from '../commons';
+import { plainToInstance } from 'class-transformer';
+import { User } from '../models/User';
 
 const authRoutes = Router();
 
 authRoutes.post(
   '/login',
-  passport.authenticate('jwt', { session: false }),
   dtoValidation(LoginDto),
   nextErr(async (req: Request, res: Response) => {
     const { username, password }: LoginDto = req.body;
-    const user = await PostgresDataSource.createQueryBuilder()
-      .select('user')
-      .from(User, 'user')
-      .where('user.username = :username', { username })
-      .getOne();
+    const user = await userRepo.findOneBy({ username });
     if (!user) {
       throw new ApiError(httpStatus.NOT_FOUND, 'username not existed');
     }
@@ -36,11 +31,9 @@ authRoutes.post(
       throw new ApiError(httpStatus.BAD_REQUEST, 'password not match');
     }
 
-    // const token = jwt.sign({ username: user.username }, '123@123ab', {
-    //   algorithm: 'RS256',
-    // });
+    const token = await generateToken(user.id);
 
-    return buildResponseMessage(httpStatus.OK, res, user);
+    return buildResponseMessage(httpStatus.OK, res, token);
   })
 );
 
@@ -48,12 +41,15 @@ authRoutes.post(
   '/register',
   dtoValidation(RegisterDto),
   nextErr(async (req: Request, res: Response) => {
-    const user = plainToInstance(User, req.body);
-    user.isCustomer = true;
     const salt = await generateSalt();
-    user.password = await hashStr(req.body.password, salt);
-    await PostgresDataSource.manager.save(user);
-    return buildResponseMessage(httpStatus.OK, res, user);
+    const password = await hashStr(req.body.password, salt);
+    const user = plainToInstance(User, {
+      ...req.body,
+      password,
+      isCustomer: true,
+    });
+    const inserted = await PostgresDataSource.manager.save(user);
+    return buildResponseMessage(httpStatus.OK, res, inserted);
   })
 );
 
@@ -61,7 +57,18 @@ authRoutes.get(
   '/refresh-token',
   dtoValidation(RefreshTokenDto),
   nextErr(async (req: Request, res: Response) => {
-    res.status(200).json({ msg: 'Login success' });
+    const { refreshToken } = req.body;
+    const rToken = await tokenRepo.findOneBy({ refreshToken });
+    if (!rToken) {
+      throw new ApiError(httpStatus.NOT_FOUND, `token not found`);
+    }
+    const { iat, userId } = rToken;
+    if (iat <= Date.now()) {
+      throw new ApiError(httpStatus.UNAUTHORIZED, `refresh token expired`);
+    }
+
+    const updated = await generateToken(userId, true);
+    return buildResponseMessage(httpStatus.OK, res, updated);
   })
 );
 
